@@ -1,0 +1,381 @@
+<UserControl x:Class="Ppc.App.Views.AutomationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Ppc.App.ViewModels"
+             mc:Ignorable="d" d:DesignHeight="1000" d:DesignWidth="1120">
+
+    <UserControl.Resources>
+        <vm:RuleTriggerTextConverter x:Key="TriggerText" />
+        <vm:RuleThresholdTextConverter x:Key="ThresholdText" />
+        <vm:TargetModeTextConverter x:Key="ModeText" />
+        <vm:TargetFanModeTextConverter x:Key="FanModeText" />
+
+        <Style x:Key="RuleRow" TargetType="ListBoxItem">
+            <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Row" Background="Transparent" CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Row" Property="Background" Value="{DynamicResource Bg.Hover}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Row" Property="Background" Value="{DynamicResource Bg.Selected}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,0,4,12">
+
+            <!-- 页头 -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="刷新" Command="{Binding RefreshCommand}"
+                            Style="{DynamicResource SecondaryButton}" MinWidth="80" />
+                    <Button Content="新增规则" Command="{Binding AddRuleCommand}"
+                            Style="{DynamicResource SecondaryButton}" MinWidth="96" Margin="8,0,0,0" />
+                    <Button Content="删除规则" Command="{Binding DeleteRuleCommand}"
+                            Style="{DynamicResource SecondaryButton}" MinWidth="96" Margin="8,0,0,0" />
+                    <Button Content="保存设置" Command="{Binding SaveCommand}"
+                            Style="{DynamicResource PrimaryButton}" MinWidth="104" Margin="8,0,0,0" />
+                </StackPanel>
+            </Grid>
+
+            <!-- 总开关 + 温度保护 -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.1*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{DynamicResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <CheckBox Style="{DynamicResource ModernToggle}" Content="启用自动化策略"
+                                  IsChecked="{Binding Enabled, Mode=TwoWay}" />
+                        <TextBlock Text="{Binding OverviewText}" Style="{DynamicResource BodyText}"
+                                   TextWrapping="Wrap" Margin="0,10,0,0" />
+                        <TextBlock Text="规则由后台服务按优先级评估，触发后会真实切换电源方案与风扇模式。"
+                                   Style="{DynamicResource HintText}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{DynamicResource CardStyle}">
+                    <StackPanel>
+                        <CheckBox Style="{DynamicResource ModernToggle}" Content="启用温度保护（超阈值强制降温）"
+                                  IsChecked="{Binding ThermalGuardEnabled, Mode=TwoWay}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBlock Text="保护阈值" Style="{DynamicResource FormLabel}" />
+                            <TextBlock Text="{Binding ThermalGuardCelsius}" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Accent.Primary}" Margin="10,0,0,0" />
+                            <TextBlock Text="℃" Style="{DynamicResource HintText}" Margin="2,2,0,0" />
+                        </StackPanel>
+                        <Slider Style="{DynamicResource ModernSlider}" Minimum="60" Maximum="110"
+                                TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,8,0,0"
+                                Value="{Binding ThermalGuardCelsius, Mode=TwoWay}"
+                                IsEnabled="{Binding ThermalGuardEnabled}" />
+                        <TextBlock Text="超过阈值降到均衡并提高风扇转速，回落到阈值以下 5℃ 自动解除。"
+                                   Style="{DynamicResource HintText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- 规则列表 -->
+            <TextBlock Text="规则列表" Style="{DynamicResource SectionTitleText}" Margin="0,24,0,10" />
+            <Border Style="{DynamicResource CardStyle}">
+                <StackPanel>
+                    <Grid Margin="10,0,10,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1.3*" />
+                            <ColumnDefinition Width="1.2*" />
+                            <ColumnDefinition Width="0.8*" />
+                            <ColumnDefinition Width="0.9*" />
+                            <ColumnDefinition Width="0.5*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="名称" Style="{DynamicResource MetricLabelText}" />
+                        <TextBlock Grid.Column="1" Text="触发条件" Style="{DynamicResource MetricLabelText}" />
+                        <TextBlock Grid.Column="2" Text="阈值 / 进程" Style="{DynamicResource MetricLabelText}" />
+                        <TextBlock Grid.Column="3" Text="目标模式" Style="{DynamicResource MetricLabelText}" />
+                        <TextBlock Grid.Column="4" Text="目标风扇" Style="{DynamicResource MetricLabelText}" />
+                        <TextBlock Grid.Column="5" Text="优先级" Style="{DynamicResource MetricLabelText}" />
+                        <TextBlock Grid.Column="6" Text="状态" Style="{DynamicResource MetricLabelText}" MinWidth="34" />
+                    </Grid>
+
+                    <ListBox ItemsSource="{Binding Rules}" SelectedItem="{Binding SelectedRule, Mode=TwoWay}"
+                             Background="Transparent" BorderThickness="0" MaxHeight="240"
+                             ItemContainerStyle="{DynamicResource RuleRow}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.5*" />
+                                        <ColumnDefinition Width="1.3*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="0.8*" />
+                                        <ColumnDefinition Width="0.9*" />
+                                        <ColumnDefinition Width="0.5*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" FontSize="12.5" TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource Text.Primary}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" FontSize="12" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Text.Secondary}"
+                                               Text="{Binding Converter={StaticResource TriggerText}}" />
+                                    <TextBlock Grid.Column="2" FontSize="12" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Text.Secondary}"
+                                               TextTrimming="CharacterEllipsis"
+                                               Text="{Binding Converter={StaticResource ThresholdText}}" />
+                                    <TextBlock Grid.Column="3" FontSize="12" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Text.Secondary}"
+                                               Text="{Binding Converter={StaticResource ModeText}}" />
+                                    <TextBlock Grid.Column="4" FontSize="12" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Text.Secondary}"
+                                               Text="{Binding Converter={StaticResource FanModeText}}" />
+                                    <TextBlock Grid.Column="5" FontSize="12" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Text.Secondary}"
+                                               Text="{Binding Priority}" />
+                                    <TextBlock Grid.Column="6" FontSize="11.5" VerticalAlignment="Center" MinWidth="34">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="停用" />
+                                                <Setter Property="Foreground" Value="{DynamicResource State.Muted}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Enabled}" Value="True">
+                                                        <Setter Property="Text" Value="启用" />
+                                                        <Setter Property="Foreground" Value="{DynamicResource State.Good}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Text="还没有规则，点右上角「新增规则」。"
+                               Style="{DynamicResource HintText}" Margin="10,10,0,0"
+                               Visibility="{Binding HasNoRules, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 规则编辑 -->
+            <TextBlock Text="编辑选中规则" Style="{DynamicResource SectionTitleText}" Margin="0,24,0,10" />
+            <Border Style="{DynamicResource CardStyle}">
+                <Grid>
+                    <StackPanel Visibility="{Binding HasSelectedRule, Converter={StaticResource BoolToVisibility}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 左列 -->
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="92" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="规则名称" Style="{DynamicResource FormLabel}" />
+                                    <TextBox Grid.Column="1" Style="{DynamicResource ModernTextBox}"
+                                             Text="{Binding RuleName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </Grid>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="92" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="触发条件" Style="{DynamicResource FormLabel}" />
+                                    <ComboBox Grid.Column="1" Style="{DynamicResource ModernComboBox}"
+                                              ItemsSource="{Binding TriggerOptions}"
+                                              SelectedIndex="{Binding SelectedTriggerIndex, Mode=TwoWay}" />
+                                </Grid>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="92" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="阈值" Style="{DynamicResource FormLabel}" />
+                                    <Grid Grid.Column="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Style="{DynamicResource ModernTextBox}"
+                                                 IsEnabled="{Binding IsThresholdRelevant}"
+                                                 Text="{Binding Threshold, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ThresholdUnit}"
+                                                   Style="{DynamicResource HintText}" Margin="8,0,0,0"
+                                                   VerticalAlignment="Center" MinWidth="16" />
+                                    </Grid>
+                                </Grid>
+                                <TextBlock Text="{Binding ThresholdHint}" Style="{DynamicResource HintText}"
+                                           TextWrapping="Wrap" Margin="92,0,0,10" />
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="92" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="进程名" Style="{DynamicResource FormLabel}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBox Style="{DynamicResource ModernTextBox}" Width="180"
+                                                 IsEnabled="{Binding IsProcessRelevant}"
+                                                 Text="{Binding ProcessName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                        <ComboBox Style="{DynamicResource ModernComboBox}" Width="150" Margin="8,0,0,0"
+                                                  IsEnabled="{Binding IsProcessRelevant}"
+                                                  ItemsSource="{Binding ProcessExampleOptions}"
+                                                  SelectedItem="{Binding SelectedProcessExample, Mode=TwoWay}"
+                                                  ToolTip="常见游戏进程名示例，选中即填入上方输入框" />
+                                        <Button Content="选择运行中进程" Style="{DynamicResource SecondaryButton}"
+                                                Margin="8,0,0,0" MinWidth="118"
+                                                IsEnabled="{Binding IsProcessRelevant}"
+                                                Command="{Binding OpenProcessPickerCommand}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <CheckBox Style="{DynamicResource ModernToggle}" Content="启用这条规则"
+                                          IsChecked="{Binding RuleEnabled, Mode=TwoWay}" Margin="0,6,0,0" />
+                            </StackPanel>
+
+                            <!-- 右列 -->
+                            <StackPanel Grid.Column="1">
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="112" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="目标性能模式" Style="{DynamicResource FormLabel}" />
+                                    <ComboBox Grid.Column="1" Style="{DynamicResource ModernComboBox}"
+                                              ItemsSource="{Binding ModeOptions}"
+                                              SelectedIndex="{Binding SelectedModeIndex, Mode=TwoWay}" />
+                                </Grid>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="112" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="目标风扇模式" Style="{DynamicResource FormLabel}" />
+                                    <ComboBox Grid.Column="1" Style="{DynamicResource ModernComboBox}"
+                                              ItemsSource="{Binding FanModeOptions}"
+                                              SelectedIndex="{Binding SelectedFanModeIndex, Mode=TwoWay}" />
+                                </Grid>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="112" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="冷却秒数" Style="{DynamicResource FormLabel}" />
+                                    <TextBox Grid.Column="1" Style="{DynamicResource ModernTextBox}"
+                                             Text="{Binding CooldownSeconds, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </Grid>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="112" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="优先级（0–100）" Style="{DynamicResource FormLabel}" />
+                                    <TextBox Grid.Column="1" Style="{DynamicResource ModernTextBox}"
+                                             Text="{Binding Priority, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </Grid>
+
+                                <CheckBox Style="{DynamicResource ModernToggle}" Content="条件解除后恢复先前模式"
+                                          IsChecked="{Binding RestorePrevious, Mode=TwoWay}" Margin="0,6,0,0" />
+
+                                <TextBlock Text="{Binding RuleDetailText}" Style="{DynamicResource HintText}"
+                                           TextWrapping="Wrap" Margin="0,12,0,0" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 进程选择面板 -->
+                        <Border Style="{DynamicResource PanelStyle}" Margin="0,14,0,0"
+                                Visibility="{Binding IsProcessPickerOpen, Converter={StaticResource BoolToVisibility}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding ProcessPickerText}" Style="{DynamicResource CardTitleText}" />
+                                    <Button Grid.Column="1" Content="关闭" Command="{Binding CloseProcessPickerCommand}"
+                                            Style="{DynamicResource GhostButton}" MinWidth="64" />
+                                </Grid>
+                                <ScrollViewer MaxHeight="170" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
+                                    <ItemsControl ItemsSource="{Binding ProcessCandidates}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Content="{Binding}" Style="{DynamicResource GhostButton}"
+                                                        Margin="0,0,6,6" MinWidth="96"
+                                                        CommandParameter="{Binding}"
+                                                        Command="{Binding DataContext.PickProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="改完记得点右上角「保存设置」，写入 settings.json 后立即生效。"
+                                   Style="{DynamicResource HintText}" TextWrapping="Wrap" Margin="0,12,0,0" />
+                    </StackPanel>
+
+                    <TextBlock Text="从上方列表选一条规则即可编辑。" Style="{DynamicResource HintText}"
+                               Margin="4,8,0,8"
+                               Visibility="{Binding IsRuleSelected, Converter={StaticResource InverseBoolToVisibility}}" />
+                </Grid>
+            </Border>
+
+            <!-- 运行状态 -->
+            <TextBlock Text="运行状态" Style="{DynamicResource SectionTitleText}" Margin="0,24,0,10" />
+            <Border Style="{DynamicResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{Binding StatusText}" Style="{DynamicResource BodyText}" TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding StatusHistory}" Margin="0,10,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontSize="11.5" Margin="0,2,0,0"
+                                           Foreground="{DynamicResource Text.Tertiary}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

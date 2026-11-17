@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:infra="clr-namespace:Ppc.App.Infrastructure">
+    <infra:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    <infra:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+    <infra:InverseBoolConverter x:Key="InverseBool" />
+    <infra:EnumToBoolConverter x:Key="EnumToBool" />
+    <infra:NullToVisibilityConverter x:Key="NullToVisibility" />
+    <infra:RatioToWidthConverter x:Key="RatioToWidth" />
+    <infra:StateToBrushConverter x:Key="StateToBrush" />
+    <infra:PathGeometryConverter x:Key="PathGeometry" />
+</ResourceDictionary>

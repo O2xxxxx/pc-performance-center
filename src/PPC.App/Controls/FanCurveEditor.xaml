@@ -1,0 +1,18 @@
+<UserControl x:Class="Ppc.App.Controls.FanCurveEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinHeight="230" MinWidth="320" Focusable="True" Background="Transparent">
+    <!-- 自绘曲线编辑器：网格/折线/可拖动节点全部在代码里用 Canvas 画，颜色全部走主题 DynamicResource -->
+    <Border Background="{DynamicResource Bg.SurfaceAlt}"
+            BorderBrush="{DynamicResource Border.Subtle}"
+            BorderThickness="1" CornerRadius="10">
+        <Grid>
+            <Canvas x:Name="Plot" Background="Transparent" ClipToBounds="True"/>
+            <TextBlock x:Name="EmptyHint"
+                       Text="请选择或新建一条曲线"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       IsHitTestVisible="False" Visibility="Collapsed"
+                       Style="{DynamicResource HintText}"/>
+        </Grid>
+    </Border>
+</UserControl>

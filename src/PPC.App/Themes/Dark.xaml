@@ -1,0 +1,79 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==========================================================================
+         macOS 风格 · 深色（默认）
+         参照 macOS Ventura/Sonoma 深色外观：近黑底色 + 分层的灰阶表面 + 系统蓝强调色。
+         所有键名与 Light.xaml 一一对应，换主题不需要重建样式。
+         ========================================================================== -->
+
+    <!-- 表面层次：Window → Sidebar → Surface(卡片) → SurfaceAlt(内嵌) -->
+    <SolidColorBrush x:Key="Bg.Window" Color="#1C1C1E" />
+    <SolidColorBrush x:Key="Bg.Sidebar" Color="#232325" />
+    <SolidColorBrush x:Key="Bg.Surface" Color="#2C2C2E" />
+    <SolidColorBrush x:Key="Bg.SurfaceAlt" Color="#333336" />
+    <SolidColorBrush x:Key="Bg.Hover" Color="#3A3A3D" />
+    <SolidColorBrush x:Key="Bg.Selected" Color="#48484C" />
+    <SolidColorBrush x:Key="Bg.Input" Color="#1F1F21" />
+    <SolidColorBrush x:Key="Bg.Overlay" Color="#B3000000" />
+
+    <!-- 分隔线 / 描边 -->
+    <SolidColorBrush x:Key="Border.Subtle" Color="#3A3A3C" />
+    <SolidColorBrush x:Key="Border.Strong" Color="#545458" />
+    <SolidColorBrush x:Key="Border.Focus" Color="#0A84FF" />
+    <SolidColorBrush x:Key="Separator" Color="#3A3A3C" />
+
+    <!-- 文本 -->
+    <SolidColorBrush x:Key="Text.Primary" Color="#F5F5F7" />
+    <SolidColorBrush x:Key="Text.Secondary" Color="#B9B9C0" />
+    <SolidColorBrush x:Key="Text.Tertiary" Color="#8E8E93" />
+
+    <!-- 系统强调色（macOS blue） -->
+    <SolidColorBrush x:Key="Accent.Primary" Color="#0A84FF" />
+    <SolidColorBrush x:Key="Accent.Soft" Color="#12314F" />
+    <SolidColorBrush x:Key="Accent.Hover" Color="#3B9BFF" />
+    <SolidColorBrush x:Key="Accent.Pressed" Color="#0062CC" />
+    <SolidColorBrush x:Key="Accent.OnAccent" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Accent.GradientStart" Color="#0A84FF" />
+    <SolidColorBrush x:Key="Accent.GradientEnd" Color="#5E5CE6" />
+
+    <LinearGradientBrush x:Key="Accent.Brush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#0A84FF" Offset="0" />
+        <GradientStop Color="#5E5CE6" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Accent.BrushHover" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#3B9BFF" Offset="0" />
+        <GradientStop Color="#7A78F0" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- 状态色（macOS 系统色板） -->
+    <SolidColorBrush x:Key="State.Good" Color="#32D74B" />
+    <SolidColorBrush x:Key="State.Warn" Color="#FFD60A" />
+    <SolidColorBrush x:Key="State.Bad" Color="#FF453A" />
+    <SolidColorBrush x:Key="State.Info" Color="#64D2FF" />
+    <SolidColorBrush x:Key="State.Muted" Color="#8E8E93" />
+
+    <SolidColorBrush x:Key="State.GoodSoft" Color="#17351F" />
+    <SolidColorBrush x:Key="State.WarnSoft" Color="#3A3312" />
+    <SolidColorBrush x:Key="State.BadSoft" Color="#3B1D1B" />
+    <SolidColorBrush x:Key="State.InfoSoft" Color="#14323B" />
+
+    <!-- 控件零件 -->
+    <SolidColorBrush x:Key="Slider.Track" Color="#48484C" />
+    <SolidColorBrush x:Key="Slider.Thumb" Color="#F5F5F7" />
+    <SolidColorBrush x:Key="Toggle.Off" Color="#39393C" />
+
+    <SolidColorBrush x:Key="Scroll.Thumb" Color="#5A5A5F" />
+    <SolidColorBrush x:Key="Scroll.ThumbHover" Color="#727277" />
+    <SolidColorBrush x:Key="Scroll.ThumbDrag" Color="#8A8A8F" />
+
+    <!-- 图表 -->
+    <SolidColorBrush x:Key="Chart.Grid" Color="#333336" />
+    <SolidColorBrush x:Key="Chart.Axis" Color="#6E6E73" />
+
+    <!-- 窗口红绿灯 -->
+    <SolidColorBrush x:Key="Traffic.Close" Color="#FF5F57" />
+    <SolidColorBrush x:Key="Traffic.Minimize" Color="#FEBC2E" />
+    <SolidColorBrush x:Key="Traffic.Maximize" Color="#28C840" />
+</ResourceDictionary>

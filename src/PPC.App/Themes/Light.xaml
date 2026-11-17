@@ -1,0 +1,71 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==========================================================================
+         macOS 风格 · 浅色
+         参照 macOS 浅色外观：暖白窗口底 + 纯白卡片 + 极细描边 + 系统蓝。
+         不是简单反色，深色下靠亮度分层，浅色下靠描边与阴影分层。
+         ========================================================================== -->
+
+    <SolidColorBrush x:Key="Bg.Window" Color="#F5F5F7" />
+    <SolidColorBrush x:Key="Bg.Sidebar" Color="#ECECEF" />
+    <SolidColorBrush x:Key="Bg.Surface" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Bg.SurfaceAlt" Color="#F2F2F5" />
+    <SolidColorBrush x:Key="Bg.Hover" Color="#E4E4E9" />
+    <SolidColorBrush x:Key="Bg.Selected" Color="#D8D8DE" />
+    <SolidColorBrush x:Key="Bg.Input" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Bg.Overlay" Color="#4D000000" />
+
+    <SolidColorBrush x:Key="Border.Subtle" Color="#E1E1E6" />
+    <SolidColorBrush x:Key="Border.Strong" Color="#C7C7CC" />
+    <SolidColorBrush x:Key="Border.Focus" Color="#007AFF" />
+    <SolidColorBrush x:Key="Separator" Color="#E1E1E6" />
+
+    <SolidColorBrush x:Key="Text.Primary" Color="#1D1D1F" />
+    <SolidColorBrush x:Key="Text.Secondary" Color="#5F5F66" />
+    <SolidColorBrush x:Key="Text.Tertiary" Color="#8E8E93" />
+
+    <SolidColorBrush x:Key="Accent.Primary" Color="#007AFF" />
+    <SolidColorBrush x:Key="Accent.Soft" Color="#E5F0FF" />
+    <SolidColorBrush x:Key="Accent.Hover" Color="#3395FF" />
+    <SolidColorBrush x:Key="Accent.Pressed" Color="#0062CC" />
+    <SolidColorBrush x:Key="Accent.OnAccent" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Accent.GradientStart" Color="#007AFF" />
+    <SolidColorBrush x:Key="Accent.GradientEnd" Color="#5856D6" />
+
+    <LinearGradientBrush x:Key="Accent.Brush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#007AFF" Offset="0" />
+        <GradientStop Color="#5856D6" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Accent.BrushHover" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#3395FF" Offset="0" />
+        <GradientStop Color="#7371E0" Offset="1" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="State.Good" Color="#28A745" />
+    <SolidColorBrush x:Key="State.Warn" Color="#C08A00" />
+    <SolidColorBrush x:Key="State.Bad" Color="#E03131" />
+    <SolidColorBrush x:Key="State.Info" Color="#0B8AC4" />
+    <SolidColorBrush x:Key="State.Muted" Color="#A1A1A6" />
+
+    <SolidColorBrush x:Key="State.GoodSoft" Color="#E7F7EA" />
+    <SolidColorBrush x:Key="State.WarnSoft" Color="#FFF6DF" />
+    <SolidColorBrush x:Key="State.BadSoft" Color="#FDEAEA" />
+    <SolidColorBrush x:Key="State.InfoSoft" Color="#E6F4FB" />
+
+    <SolidColorBrush x:Key="Slider.Track" Color="#D6D6DB" />
+    <SolidColorBrush x:Key="Slider.Thumb" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Toggle.Off" Color="#E3E3E8" />
+
+    <SolidColorBrush x:Key="Scroll.Thumb" Color="#C4C4CA" />
+    <SolidColorBrush x:Key="Scroll.ThumbHover" Color="#AEAEB4" />
+    <SolidColorBrush x:Key="Scroll.ThumbDrag" Color="#98989E" />
+
+    <SolidColorBrush x:Key="Chart.Grid" Color="#EDEDF1" />
+    <SolidColorBrush x:Key="Chart.Axis" Color="#9A9AA0" />
+
+    <SolidColorBrush x:Key="Traffic.Close" Color="#FF5F57" />
+    <SolidColorBrush x:Key="Traffic.Minimize" Color="#FEBC2E" />
+    <SolidColorBrush x:Key="Traffic.Maximize" Color="#28C840" />
+</ResourceDictionary>

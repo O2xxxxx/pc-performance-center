@@ -1,0 +1,223 @@
+<UserControl x:Class="Ppc.App.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Ppc.App.Controls">
+    <UserControl.Resources>
+        <!-- 单个 KPI 卡片：值 + 单位 + 来源/不可用原因 + 状态点 -->
+        <DataTemplate x:Key="KpiTileTemplate">
+            <Border Background="{DynamicResource Bg.SurfaceAlt}"
+                    BorderBrush="{DynamicResource Border.Subtle}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="12,10"
+                    MinWidth="120">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <TextBlock Text="{Binding Title}" Style="{StaticResource MetricLabelText}" />
+                        <Ellipse Width="7" Height="7" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                 Fill="{Binding State, Converter={StaticResource StateToBrush}}" />
+                    </Grid>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,2,0,0">
+                        <TextBlock Text="{Binding Value}" Style="{StaticResource MetricValueText}" />
+                        <TextBlock Text="{Binding Unit}" Style="{StaticResource MetricUnitText}"
+                                   Margin="4,0,0,5" VerticalAlignment="Bottom" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="2" Text="{Binding Detail}" Style="{StaticResource HintText}"
+                               TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- 当前状态里的一行：左标题右数值 -->
+        <DataTemplate x:Key="StatusRowTemplate">
+            <Grid Margin="0,5">
+                <TextBlock Text="{Binding Label}" Style="{StaticResource MetricLabelText}" />
+                <TextBlock Text="{Binding Value}" Style="{StaticResource BodyText}"
+                           HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="22,18,22,22">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="420" />
+                <ColumnDefinition Width="352" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左列：CPU / GPU 关键指标 + 温度趋势 -->
+            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="处理器（CPU）" Style="{StaticResource SectionTitleText}" />
+                            <TextBlock Text="{Binding CpuPowerLimitText}" Style="{StaticResource HintText}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+                        <UniformGrid Columns="4" Margin="0,12,0,0">
+                            <ContentControl Content="{Binding CpuTemp}" ContentTemplate="{StaticResource KpiTileTemplate}" Margin="0,0,8,0" />
+                            <ContentControl Content="{Binding CpuPower}" ContentTemplate="{StaticResource KpiTileTemplate}" Margin="0,0,8,0" />
+                            <ContentControl Content="{Binding CpuUsage}" ContentTemplate="{StaticResource KpiTileTemplate}" Margin="0,0,8,0" />
+                            <ContentControl Content="{Binding CpuClock}" ContentTemplate="{StaticResource KpiTileTemplate}" />
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="显卡（GPU）" Style="{StaticResource SectionTitleText}" />
+                            <TextBlock Text="{Binding DeviceSubtitle}" Style="{StaticResource HintText}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       MaxWidth="280" TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                        <UniformGrid Columns="4" Margin="0,12,0,0">
+                            <ContentControl Content="{Binding GpuTemp}" ContentTemplate="{StaticResource KpiTileTemplate}" Margin="0,0,8,0" />
+                            <ContentControl Content="{Binding GpuPower}" ContentTemplate="{StaticResource KpiTileTemplate}" Margin="0,0,8,0" />
+                            <ContentControl Content="{Binding GpuUsage}" ContentTemplate="{StaticResource KpiTileTemplate}" Margin="0,0,8,0" />
+                            <ContentControl Content="{Binding GpuClock}" ContentTemplate="{StaticResource KpiTileTemplate}" />
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="温度趋势" Style="{StaticResource SectionTitleText}" />
+                            <TextBlock Text="来自本地历史缓冲（随采样间隔滚动）" Style="{StaticResource HintText}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+                        <controls:LineChart Series="{Binding TemperatureSeries}"
+                                            Unit="°C"
+                                            FixedMin="20"
+                                            FixedMax="110"
+                                            ShowGrid="True"
+                                            ShowLegend="True"
+                                            Height="268"
+                                            Margin="0,10,0,0" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 右列：当前状态 -->
+            <StackPanel Grid.Column="1">
+
+                <Border Background="{DynamicResource Accent.Soft}"
+                        BorderBrush="{DynamicResource State.Warn}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="14,10"
+                        Margin="0,0,0,12"
+                        Visibility="{Binding HasMonitoringIssue, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Text="监控提示" Style="{StaticResource CardTitleText}" />
+                        <TextBlock Text="{Binding MonitoringIssue}" Style="{StaticResource HintText}" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,6">
+                            <TextBlock Text="当前状态" Style="{StaticResource SectionTitleText}" />
+                            <TextBlock Text="{Binding LastUpdatedText}" Style="{StaticResource HintText}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+
+                        <Border Background="{DynamicResource Bg.SurfaceAlt}" CornerRadius="10" Padding="12,10">
+                            <StackPanel>
+                                <TextBlock Text="性能模式" Style="{StaticResource MetricLabelText}" />
+                                <TextBlock Text="{Binding ModeTitle}" Style="{StaticResource CardTitleText}"
+                                           FontSize="16" Margin="0,3,0,0" />
+                                <TextBlock Text="{Binding ModeDescription}" Style="{StaticResource HintText}" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="供电状态" Style="{StaticResource MetricLabelText}" />
+                                <TextBlock Text="{Binding PowerSourceText}" Style="{StaticResource BodyText}" Margin="0,3,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="电池" Style="{StaticResource MetricLabelText}" />
+                                <TextBlock Text="{Binding BatteryText}" Style="{StaticResource BodyText}" Margin="0,3,0,0" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,12,0,10" />
+
+                        <TextBlock Text="设备" Style="{StaticResource MetricLabelText}" />
+                        <TextBlock Text="{Binding DeviceTitle}" Style="{StaticResource CardTitleText}" Margin="0,3,0,0" />
+                        <TextBlock Text="{Binding DeviceSubtitle}" Style="{StaticResource HintText}" Margin="0,3,0,0" />
+                        <TextBlock Text="{Binding PlatformText}" Style="{StaticResource HintText}" Margin="0,2,0,0" />
+
+                        <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,12,0,10" />
+
+                        <Grid>
+                            <TextBlock Text="风扇转速" Style="{StaticResource MetricLabelText}" />
+                            <Ellipse Width="7" Height="7" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{DynamicResource State.Muted}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding FanSupported}" Value="True">
+                                                <Setter Property="Fill" Value="{DynamicResource State.Good}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding FanTiles}" Margin="0,4,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource HintText}" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding Value}" Style="{StaticResource BodyText}" />
+                                            <TextBlock Text="{Binding Unit}" Style="{StaticResource HintText}" Margin="3,0,0,1" VerticalAlignment="Bottom" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding FanStatusText}" Style="{StaticResource HintText}" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="内存与存储" Style="{StaticResource SectionTitleText}" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ContentControl Grid.Column="0" Content="{Binding MemoryTile}" ContentTemplate="{StaticResource KpiTileTemplate}" Margin="0,0,8,0" />
+                            <ContentControl Grid.Column="1" Content="{Binding DiskTile}" ContentTemplate="{StaticResource KpiTileTemplate}" />
+                        </Grid>
+                        <TextBlock Text="{Binding MemoryDetailText}" Style="{StaticResource HintText}" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding DiskDetailText}" Style="{StaticResource HintText}" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding RefreshMessage}" Style="{StaticResource HintText}" />
+                        <Button Content="立即刷新快照" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding RefreshCommand}" Margin="0,8,0,0" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
