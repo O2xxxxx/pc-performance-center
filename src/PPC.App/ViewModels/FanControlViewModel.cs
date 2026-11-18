@@ -600,6 +600,14 @@ public sealed class FanControlViewModel : ObservableObject, IPageViewModel, IAct
             Curves.Remove(removed);
             _app.Settings.Fan.Curves.RemoveAll(c => ReferenceEquals(c, removed) || c.Id == removed.Id);
 
+            // 删掉最后一条曲线时要自动补一条默认曲线，否则别的机器上点删除会直接 IndexOutOfRange
+            if (Curves.Count == 0)
+            {
+                var fallback = FanCurve.Default();
+                Curves.Add(fallback);
+                _app.Settings.Fan.Curves.Add(fallback);
+            }
+
             var next = Curves[0];
             ActiveCurve = next;
             _app.Settings.Fan.ActiveCurveId = next.Id;
