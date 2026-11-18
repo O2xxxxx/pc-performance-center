@@ -1,6 +1,20 @@
 # PC Performance Center（电脑性能与散热控制中心）
 
+[![Release](https://img.shields.io/github/v/release/O2xxxxx/pc-performance-center?label=release&color=0A84FF)](https://github.com/O2xxxxx/pc-performance-center/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/O2xxxxx/pc-performance-center/total?color=32D74B)](https://github.com/O2xxxxx/pc-performance-center/releases)
+[![License](https://img.shields.io/github/license/O2xxxxx/pc-performance-center?color=FFD60A)](LICENSE)
+![Platform](https://img.shields.io/badge/platform-Windows%2011%20x64-5E5CE6)
+![.NET](https://img.shields.io/badge/.NET-8-512BD4)
+
 面向 Windows 11 笔记本的现代化性能调节与硬件监控工具。C# + WPF + .NET 8，中文界面，深/浅色主题，**macOS 风格视觉语言**：左上红黄绿窗口按钮、半透明感侧栏、系统蓝胶囊选中态、大标题层级、30px 控件高度与 42×24 开关。
+
+### [⬇ 下载最新版](https://github.com/O2xxxxx/pc-performance-center/releases/latest)
+
+单文件自包含 EXE（约 67 MB），双击即用，目标机无需安装 .NET 8。建议放在纯英文路径下，并以管理员身份运行以获取完整传感器数据。
+
+<img src="docs/screenshots/dashboard.png" width="860" alt="首页仪表盘" />
+
+<img src="docs/screenshots/performance.png" width="860" alt="性能调节" />
 
 > 设计原则只有一条：**界面上出现的每个数字都来自真实传感器，每个按钮背后都有真实的系统操作。**
 > 读不到的传感器显示「不支持」并给出原因，不支持的控制功能直接禁用并解释原因，绝不用模拟数据凑界面。
