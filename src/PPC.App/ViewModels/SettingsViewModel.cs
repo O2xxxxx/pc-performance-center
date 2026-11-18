@@ -58,6 +58,7 @@ public sealed class SettingsViewModel : ObservableObject, IPageViewModel
         RestoreDefaultsCommand = new RelayCommand(() => _ = RestoreFactoryDefaultsAsync());
         SetThemeCommand = new RelayCommand(parameter => ApplyTheme(parameter as string ?? "Dark"));
         OpenDataDirectoryCommand = new RelayCommand(OpenDataDirectory);
+        ExportDiagnosticsCommand = new RelayCommand(() => _ = ExportDiagnosticsAsync());
 
         LoadFromSettings();
         LoadDeviceInformation();
@@ -158,6 +159,7 @@ public sealed class SettingsViewModel : ObservableObject, IPageViewModel
     public RelayCommand RestoreDefaultsCommand { get; }
     public RelayCommand SetThemeCommand { get; }
     public RelayCommand OpenDataDirectoryCommand { get; }
+    public RelayCommand ExportDiagnosticsCommand { get; }
 
     public Task ActivateAsync()
     {
@@ -368,6 +370,62 @@ public sealed class SettingsViewModel : ObservableObject, IPageViewModel
         catch (Exception ex)
         {
             AppLog.Instance.Error("应用读取到的设置失败", ex);
+        }
+    }
+
+    /// <summary>
+    /// 导出诊断报告：把硬件树、传感器清单、能力矩阵、权限与电源状态写成一个 txt，
+    /// 方便在别人的机器上排查「为什么我这里读不到数据」。
+    /// </summary>
+    private async Task ExportDiagnosticsAsync()
+    {
+        try
+        {
+            SaveMessage = "正在收集诊断信息…";
+
+            string report;
+            try
+            {
+                report = await Ppc.Hardware.Monitoring.DiagnosticsProbe.CollectAsync(_app.Monitor).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                report = "采集诊断信息时出错：" + ex.Message + Environment.NewLine + ex;
+            }
+
+            var header = new System.Text.StringBuilder();
+            header.AppendLine("PC Performance Center 诊断报告");
+            header.AppendLine("生成时间：" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            header.AppendLine("版本：" + _app.AppVersion);
+            header.AppendLine("设备：" + _app.Device.DisplayName + " / " + _app.Device.Model);
+            header.AppendLine("系统：" + _app.Device.OsCaption + " build " + _app.Device.OsBuild);
+            header.AppendLine("管理员权限：" + (_app.IsElevated ? "是" : "否（CPU 温度等需要管理员）"));
+            header.AppendLine("能力矩阵：" + _app.Device.Capabilities.Count(c => c.Supported) + "/" + _app.Device.Capabilities.Count + " 项可用");
+            header.AppendLine(new string('-', 64));
+            header.AppendLine(report);
+
+            var name = "PCPerformanceCenter-诊断-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".txt";
+            string path;
+            try
+            {
+                var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                path = Path.Combine(desktop, name);
+                await File.WriteAllTextAsync(path, header.ToString(), System.Text.Encoding.UTF8).ConfigureAwait(true);
+            }
+            catch (Exception)
+            {
+                path = Path.Combine(_app.Store.Directory, name);
+                Directory.CreateDirectory(_app.Store.Directory);
+                await File.WriteAllTextAsync(path, header.ToString(), System.Text.Encoding.UTF8).ConfigureAwait(true);
+            }
+
+            SaveMessage = "诊断报告已导出：" + path;
+            AppLog.Instance.Info("诊断报告已导出：" + path);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Instance.Error("导出诊断报告失败", ex);
+            SaveMessage = "导出诊断报告失败：" + ex.Message;
         }
     }
 

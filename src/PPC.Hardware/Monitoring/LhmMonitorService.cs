@@ -715,9 +715,13 @@ public sealed class LhmMonitorService : IMonitorService
         var anyReadable = cpuTemperatures.Any(hit => IsPlausibleTemperature(hit.Reading));
         if (anyReadable) return null;
 
-        return SystemPowerProbe.IsElevated
-            ? "CPU 温度传感器全部无读数：硬件访问驱动未激活，或被其它监控软件独占"
-            : "需要管理员权限：LibreHardwareMonitor 无法加载内核驱动，CPU 温度 / 功耗 / 频率均读不到。请以管理员身份重新运行本程序。";
+        if (!SystemPowerProbe.IsElevated)
+        {
+            return "需要管理员权限：LibreHardwareMonitor 无法加载内核驱动，CPU 温度 / 功耗 / 频率均读不到。请以管理员身份重新运行本程序。";
+        }
+
+        return "CPU 温度传感器全部无读数：内核驱动没有加载成功。常见原因有：① Windows 安全中心「内核隔离 / 内存完整性(HVCI)」开启，拦截了 WinRing0 驱动；"
+             + "② 驱动文件被杀毒软件隔离；③ 被 HWiNFO / AIDA64 等其它监控软件独占。可先关闭内存完整性后重启，再以管理员身份运行本程序。";
     }
 
     /// <summary>整份快照全部不可用（带同一个原因），用于引擎不可用或未启动的场景。</summary>

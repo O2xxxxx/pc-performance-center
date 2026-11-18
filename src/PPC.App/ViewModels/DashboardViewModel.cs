@@ -190,10 +190,27 @@ public sealed class DashboardViewModel : ObservableObject, IPageViewModel
             UpdateDetailTexts(snapshot);
 
             LastUpdatedText = snapshot.Timestamp.LocalDateTime.ToString("HH:mm:ss");
+
+            // 监控整体不可用时给一条明确的横幅，而不是让用户对着一堆「不支持」猜原因
+            var cpuTemp = snapshot[Metric.CpuTemperature];
+            var cpuUsage = snapshot[Metric.CpuUsage];
             if (snapshot.Timestamp == default)
             {
                 MonitoringIssue = "尚未收到任何监控采样";
                 HasMonitoringIssue = true;
+            }
+            else if (!cpuTemp.HasValue && !cpuUsage.HasValue)
+            {
+                var reason = cpuTemp.UnavailableReason ?? cpuUsage.UnavailableReason ?? "硬件访问被拒绝";
+                MonitoringIssue = reason.Contains("管理员", StringComparison.Ordinal)
+                    ? "当前没有管理员权限：CPU 温度 / 功耗 / 频率读不到。可在「软件设置」里点「以管理员身份重启」。"
+                    : "监控不可用：" + reason;
+                HasMonitoringIssue = true;
+            }
+            else
+            {
+                HasMonitoringIssue = false;
+                MonitoringIssue = "";
             }
         }
         catch (Exception ex)

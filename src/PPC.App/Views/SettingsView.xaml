@@ -242,6 +242,18 @@
                         <Button Grid.Column="2" Content="打开日志目录" Style="{StaticResource GhostButton}"
                                 Command="{Binding OpenLogCommand}" Padding="12,6" Margin="8,0,0,0" />
                     </Grid>
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="兼容性自检" Style="{StaticResource MetricLabelText}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="导出硬件树 / 传感器清单 / 能力矩阵，换电脑排查用"
+                                   Style="{StaticResource HintText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        <Button Grid.Column="2" Content="导出诊断报告" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ExportDiagnosticsCommand}" Padding="12,6" Margin="8,0,0,0" />
+                    </Grid>
                 </StackPanel>
             </Border>
 

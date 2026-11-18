@@ -64,6 +64,7 @@ public sealed class TrayIconService : IDisposable
                 Visible = true,
             };
             _notify.DoubleClick += OnNotifyDoubleClick;
+            _notify.MouseClick += OnNotifyMouseClick;
 
             _app.SnapshotUpdated += OnSnapshotUpdated;
             _initialized = true;
@@ -158,6 +159,7 @@ public sealed class TrayIconService : IDisposable
             if (_notify is not null)
             {
                 _notify.DoubleClick -= OnNotifyDoubleClick;
+            _notify.MouseClick -= OnNotifyMouseClick;
                 _notify.Visible = false;
                 _notify.ContextMenuStrip = null;
                 _notify.Dispose();
@@ -306,6 +308,12 @@ public sealed class TrayIconService : IDisposable
     }
 
     private void OnNotifyDoubleClick(object? sender, EventArgs e) => ShowMainWindow();
+
+    /// <summary>左键单击托盘图标 → 打开主窗口（右键仍弹菜单）。</summary>
+    private void OnNotifyMouseClick(object? sender, System.Windows.Forms.MouseEventArgs e)
+    {
+        if (e.Button == System.Windows.Forms.MouseButtons.Left) ShowMainWindow();
+    }
 
     private void OnSnapshotUpdated(object? sender, HardwareSnapshot snapshot)
     {

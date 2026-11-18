@@ -2,9 +2,14 @@
 # 用法（在项目根目录）：  powershell -ExecutionPolicy Bypass -File .\build-release.ps1
 param(
     [string]$Configuration = "Release",
-    [string]$Runtime = "win-x64",
+    # 目标架构：x64（默认）或 arm64（Surface 等 ARM 笔记本）
+    [ValidateSet("x64", "arm64")]
+    [string]$Architecture = "x64",
+    [string]$Runtime = "",
     [switch]$FrameworkDependent
 )
+
+if ([string]::IsNullOrWhiteSpace($Runtime)) { $Runtime = "win-$Architecture" }
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Definition
